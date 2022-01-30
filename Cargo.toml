@@ -3,7 +3,6 @@ name = "ips"
 version = "0.1.0"
 edition = "2021"
 author = "jonathan peterson aka deadjakk"
-
 license-file = "LICENSE.md"
 description = "ips is a terminal command line tool that parses and filters provided ip addresses. supports whitelisting and blacklisting using provided CIDRs."
 homepage="https://shell.rip/ips.html"
