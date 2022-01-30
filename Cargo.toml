@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-regex ="*"
-lazy_static="*"
-itertools="*"
+itertools="0.10.3"
+structopt="0.3.26"
+ipnetwork="0.18.0"
