@@ -5,7 +5,8 @@ use structopt::StructOpt;
 use std::io::{stdin,Read};
 use std::net::IpAddr;
 use ipnetwork::IpNetwork;
-#[derive(StructOpt)]
+#[derive(StructOpt,Debug)]
+#[structopt(name="ips",about="ips - tool for parsing and filtering ip addresses",author="jonathan peterson aka @deadjakk")]
 struct Opt {
     /// non-unique output, keep any duplicates
     #[structopt(short,long)]
