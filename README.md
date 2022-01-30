@@ -15,6 +15,10 @@ Blacklisting is done after whitelisting and thus takes precedence.
 - `-i` include ips within provided comma-separated CIDRs 
 - `-x` eXclude ips within provided comma-separated CIDRs 
 
+### installation
+
+run `cargo install ip-parser` to install and `ips` to run the program.
+
 ### help output
 
 ```
