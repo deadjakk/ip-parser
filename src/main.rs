@@ -42,12 +42,16 @@ fn main()->Result<(),Box<dyn Error>>{
     let mut output = String::new();
     match options.file_name {
         Some(v) => {
-            File::open(v).expect("failed to open file").read_to_string(&mut output).expect("could not read from file");
+            File::open(v).expect("failed to open file")
+                .read_to_string(&mut output).expect("could not read from file");
         }
         None => {
-            stdin().lock().read_to_string(&mut output).expect("could not read from stdin");
+            stdin().lock().read_to_string(&mut output)
+                .expect("could not read from stdin");
         }
     }
+        println!("{:?}",get_cidrs_from_cs(Some("127.0.0.1,2.2.2.2,10.0.0.0/24"
+                    .to_string())));
     
     // parse the ip addresses
     let mut net_ips:Vec<IpAddr> = output.split_whitespace().filter_map(|token|{
@@ -79,11 +83,13 @@ fn main()->Result<(),Box<dyn Error>>{
 
     // perform whitelisting
     if !whitelist_cidrs.is_empty(){
-        net_ips = filter_vec(&mut net_ips,whitelist_cidrs,true).expect("error performing whitelisting");
+        net_ips = filter_vec(&mut net_ips,whitelist_cidrs,true)
+            .expect("error performing whitelisting");
     }
     // perform blacklisting
     if !blacklist_cidrs.is_empty(){ 
-        net_ips = filter_vec(&mut net_ips,blacklist_cidrs,false).expect("error performing blacklisting");
+        net_ips = filter_vec(&mut net_ips,blacklist_cidrs,false)
+            .expect("error performing blacklisting");
     }
  
     //dedup
@@ -122,7 +128,11 @@ fn get_cidrs(cidr_filename: Option<String>)->Option<Vec<IpNetwork>>{
     None
 }
 
-fn filter_vec(in_vec: &mut Vec<IpAddr>, cidrs: Vec<IpNetwork>, whitelist: bool) -> Result<Vec<IpAddr>,Box<dyn Error>>{
+fn filter_vec(
+    in_vec: &mut Vec<IpAddr>, 
+    cidrs: Vec<IpNetwork>, 
+    whitelist: bool
+) -> Result<Vec<IpAddr>,Box<dyn Error>>{
     let mut remove_these: Vec<_> = Vec::new();
     for ip in &mut in_vec.iter(){
         let mut allowed = false;
@@ -148,4 +158,56 @@ fn filter_vec(in_vec: &mut Vec<IpAddr>, cidrs: Vec<IpNetwork>, whitelist: bool) 
         if !remove_these.contains(&ip) {Some(*ip)}else{None}
     }).collect();
     Ok(return_vec)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn get_cidrs_from_cs_test(){
+        assert_eq!(get_cidrs_from_cs(Some("127.0.0.1,2.2.2.2,10.0.0.0/24".to_string())),Some(vec!["127.0.0.1".parse::<ipnetwork::IpNetwork>().unwrap(),
+            "2.2.2.2".parse::<ipnetwork::IpNetwork>().unwrap(),
+            "10.0.0.0/24".parse::<ipnetwork::IpNetwork>().unwrap()]));
+    }
+
+    #[test]
+    fn whitelisting() {
+        let mut net_ips: Vec<std::net::IpAddr> = vec![
+            "1.1.1.1".parse().unwrap(),
+            "2.2.2.2".parse().unwrap(),
+            "3.3.3.3".parse().unwrap(),
+        ];
+        let whitelist_cidrs: Vec<ipnetwork::IpNetwork> = vec![
+            "1.1.1.0/24".parse().unwrap(),
+            "2.2.2.2".parse().unwrap(),
+        ];
+        net_ips = filter_vec(&mut net_ips,whitelist_cidrs,true)
+            .expect("error performing whitelisting");
+        assert_eq!(
+            net_ips,vec![
+                "1.1.1.1".parse::<std::net::IpAddr>().unwrap(),
+                "2.2.2.2".parse::<std::net::IpAddr>().unwrap(),
+            ]
+        );
+    }
+    #[test]
+    fn blacklisting() {
+        let mut net_ips: Vec<std::net::IpAddr> = vec![
+            "1.1.1.1".parse().unwrap(),
+            "2.2.2.2".parse().unwrap(),
+            "3.3.3.3".parse().unwrap(),
+        ];
+        let whitelist_cidrs: Vec<ipnetwork::IpNetwork> = vec![
+            "1.1.1.0/24".parse().unwrap(),
+            "2.2.2.2".parse().unwrap(),
+        ];
+        net_ips = filter_vec(&mut net_ips,whitelist_cidrs,false)
+            .expect("error performing blacklisting");
+        assert_eq!(
+            net_ips,vec![
+                "3.3.3.3".parse::<std::net::IpAddr>().unwrap(),
+            ]
+        );
+    }
+
 }
